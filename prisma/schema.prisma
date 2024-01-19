@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+  // for enabling Search using name of companion
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+}
+
+datasource db {
+  provider = "mysql"
+  url = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+
+model Companion {
+  id              String @id @default(uuid())
+  userId          String @unique
+  userName        String
+  src             String ?
+  // db.text enable longer text li200 words and Very IMP: make it serachable
+  name            String @db.Text
+  description     String
+  instructions    String @db.Text
+  seed            String @db.Text
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  messages        Message[]
+
+  // for enabling Search using name of companion, but we dont need search here
+  @@fulltext([name])
+}
+
+enum Role {
+  user
+  system
+}
+
+model Message {
+  id              String @id @default(uuid())
+  // message can either be sent from user side or from the system side
+  role            Role
+  content         String @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  companionId     String
+  userId          String
+
+  // cascade delete ensure when Companion is deleted message is also deleted
+  companion       Companion @relation(fields: [companionId], references: [id], onDelete: Cascade)
+
+  @@index([companionId])
+}
