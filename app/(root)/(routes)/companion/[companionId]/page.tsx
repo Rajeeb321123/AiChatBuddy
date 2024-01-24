@@ -1,6 +1,6 @@
 import prismadb from "@/lib/prismadb";
 import CompanionForm from "./components/companion-form";
-import { auth, redirectToSignIn } from "@clerk/nextjs";
+import { auth, RedirectToSignIn, } from "@clerk/nextjs";
 
 interface CompanionIdpageProps {
   params: {
@@ -14,7 +14,7 @@ const CompanionIdPage = async ({
   const {userId} = auth();
 
   if (!userId) {
-    return redirectToSignIn();
+    return <RedirectToSignIn/>
   }
 
   // fetch the companion using companionId from url
