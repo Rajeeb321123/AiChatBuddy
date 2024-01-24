@@ -10,6 +10,9 @@ import { Replicate } from "langchain/llms/replicate";
 import { MemoryManager } from "@/lib/memory"
 import { rateLimit } from "@/lib/rate-limit";
 import prismadb from "@/lib/prismadb";
+import { pinecone } from "@/lib/pinecone";
+import { PineconeStore } from "langchain/vectorstores/pinecone";
+import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 
 
 export async function POST(
@@ -80,20 +83,42 @@ export async function POST(
         // fetch the recent chatHistory
         const recentChatHistory = await memoryManager.readLatestHistory(companionKey);
 
-        const similarDocs = await memoryManager.vectorSearch(
-            recentChatHistory,
-            companion_file_name
-        );
-        console.log("Simialr DOC: ",similarDocs)
+        const pineconeIndex = pinecone.Index('companion');
+        const embeddings = new OpenAIEmbeddings({
+            openAIApiKey: process.env.OPENAI_API_KEY,
+        });
+        // getting new instance of pineconestore: or vectorstore from existing index
+        let similarDocs: void | any[] = []
+        if(companion.fileKey !== null){
+            console.log("i am inside")
+            const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
+                pineconeIndex,
+                namespace: companion.fileKey
+            });
+            const results = await vectorStore.similaritySearch(prompt, 4);
+            similarDocs= results
+        }
+        // if (companion.fileKey) {
+        //     const fileKey = companion.fileKey;
+        //     console.log("hello I am inside")
+
+        //     similarDocs = await memoryManager.vectorSearch(
+        //         fileKey,
+        //         prompt
+        //     );
+        // }
+        console.log("Simialr DOC: ", similarDocs)
 
         // more info to make ai model very good
         let relevantHistory = ""
 
         if (!!similarDocs && similarDocs.length !== 0) {
-            relevantHistory = similarDocs.map((doc) => doc.pageContent).join("\n")
-        };
+            relevantHistory = similarDocs.map((doc) => doc.pageContent).join("\n");
+          }
 
-        console.log('revelent history :',relevantHistory)
+        console.log('revelent history :', relevantHistory)
+
+        console.log("recent Chat history  :" ,recentChatHistory)
 
         const { handlers } = LangChainStream();
 
@@ -128,6 +153,8 @@ export async function POST(
                 )
                 .catch(console.error)
         );
+
+        
 
 
         // VV IMP: cleaning and replacing is done below from here

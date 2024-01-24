@@ -36,7 +36,7 @@ export const ChatForm = ({
             });
             setInput('')
         }
-    }, [input])
+    }, [input, setInput, toast])
     
 
     return (

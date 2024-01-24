@@ -7,11 +7,10 @@ import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 // import { PineconeClient } from "@pinecone-database/pinecone";
 import { Pinecone } from "@pinecone-database/pinecone";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
+import { pinecone } from "./pinecone";
 
 // for pushing our docs to vectorstore: pinecone
-// import { DirectoryLoader } from "langchain/document_loaders/fs/directory"
-// import { TextLoader } from "langchain/document_loaders/fs/text"
-// import { PDFLoader } from "langchain/document_loaders/fs/pdf"
+// import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
 // import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 // import { UpsertRequestFromJSON } from "@pinecone-database/pinecone/dist/pinecone-generated-ts-fetch";
 
@@ -25,14 +24,10 @@ export type CompanionKey = {
 export class MemoryManager {
   private static instance: MemoryManager;
   private history: Redis;
-  private vectorDBClient: Pinecone;
+  // private vectorDBClient: Pinecone;
 
   public constructor() {
     this.history = Redis.fromEnv();
-    this.vectorDBClient = new Pinecone({
-      apiKey: process.env.PINECONE_API_KEY!,
-      environment: process.env.PINECONE_ENVIRONMENT!,
-    });
   }
 
   // deprecated old way 
@@ -48,25 +43,20 @@ export class MemoryManager {
 
   // for vector seaarh of simialr docs
   public async vectorSearch(
-    recentChatHistory: string,
-    companionFileName: string
+    fileKey: string,
+    prompt: string,
   ) {
-    const pineconeClient = <Pinecone>this.vectorDBClient;
-
-    const pineconeIndex = pineconeClient.Index(
-      process.env.PINECONE_INDEX! || ""
-    );
-    console.log("index:", process.env.PINECONE_INDEX!)
+    const pineconeIndex = pinecone.index("companion");
 
     const vectorStore = await PineconeStore.fromExistingIndex(
       new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY }),
-      { pineconeIndex }
+      { pineconeIndex,  namespace: fileKey }
     );
 
     console.log("vector store:", vectorStore)
 
     const similarDocs = await vectorStore
-      .similaritySearch(recentChatHistory, 3, { fileName: companionFileName })
+      .similaritySearch(prompt, 4)
       .catch((err) => {
         console.log("WARNING: failed to get vector search results.", err);
       });
@@ -75,82 +65,7 @@ export class MemoryManager {
     return similarDocs;
   };
 
-  // public async UpdateVectorStore(
-  // ) {
-  //   const pineconeClient = <Pinecone>this.vectorDBClient;
-
-  //   const pineconeIndex = pineconeClient.Index(
-  //     process.env.PINECONE_INDEX! || ""
-  //   );
-
-
-
-  //   const loader = new DirectoryLoader("./documents", {
-  //     ".txt": (path) => new TextLoader(path),
-  //     ".pdf": (path) => new PDFLoader(path),
-  //   });
-
-  //   const docs = await loader.load();
-
-  //   for (const doc of docs) {
-  //     console.log("processing documents: ", doc.metadata.source);
-  //     const txtPath = doc.metadata.source;
-  //     const text = doc.pageContent;
-  //     const textSplitter = new RecursiveCharacterTextSplitter({
-  //       // range of 200 means almost 2 sentences , 1000 means almost a paragraph
-  //       chunkSize: 1000,
-  //     });
-  //     console.log("Splitting text into chunks...");
-  //     // split text into chunks (documents)
-  //     const chunks = await textSplitter.createDocuments([text]);
-  //     console.log(`text split into ${chunks.length}.chunks`);
-  //     console.log(
-  //       `calling OpenAi Embedding endpoint documents with ${chunks.length} text chunks ...`
-  //     );
-
-  //     // creating the OpenAI embeddings for documents
-  //     const embeddingsArrays = await new OpenAIEmbeddings().embedDocuments(
-  //       chunks.map((chunk) => chunk.pageContent.replace(/n/g, ""))
-  //     );
-  //     console.log("finished the embedding documents");
-  //     console.log(
-  //       `creating ${chunks.length} vector array with id, values, and metadata `
-  //     );
-
-  //     // create vector in batch in 100 for pinecone 2 mb limit
-  //     const batchSize = 100;
-  //     let batch = [];
-  //     for (let idx = 0; idx < chunks.length; idx++) {
-  //       const chunk = chunks[idx];
-  //       const vector = {
-  //         id: `${txtPath}_${idx}`,
-  //         values: embeddingsArrays[idx],
-
-  //         metadata: {
-  //           ...chunk.metadata,
-  //           loc: JSON.stringify(chunk.metadata.loc),
-  //           // embedding the whole content in vector database, alternative we can embedd only the refrence to sql database
-  //           pageContent: chunk.pageContent,
-  //           //txtpath for realizing where result came from
-  //           txtPath: txtPath,
-  //         },
-  //       };
-  //       batch.push(vector);
-  //       // when batch is full or it's the last item, upsert the vectors
-  //       if (batch.length === batchSize || idx === chunks.length - 1) {
-          
-  //         // bat
-  //         await pineconeIndex.upsert(batch);
-
-  //         const ns = pineconeIndex.namespace('example-namespace');
-  //         await ns.upsert(batch);
-  //       };
-
-
-  //     };
-  //   };
-
-  // }
+  
 
   // function to get instance
   public static async getInstance(): Promise<MemoryManager> {

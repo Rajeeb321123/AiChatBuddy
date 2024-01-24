@@ -39,15 +39,16 @@ const UploadSpeech = ({
     const [isRecording, setIsRecording] = useState<boolean>(false);
     const lang = useLanguageSet().lang;
     
+    
 
 
     console.log("recording",isRecording)
-    const startListening = () => {
-        useSpeechRecognition({ setInput, lang })
+    const StartListening = () => {
+        
         setIsRecording(true);
     }
 
-    const stopListening = () => {
+    const StopListening = () => {
         stopRecording();
         setIsRecording(false);
 
@@ -122,7 +123,7 @@ const UploadSpeech = ({
                                         disabled={isLoading}
                                         variant="ghost"
                                         className="bg-[#63c2db]"
-                                        onClick={stopListening}
+                                        onClick={StopListening}
                                     >
                                         <SendHorizonal className="" />
                                     </Button>
@@ -138,11 +139,11 @@ const UploadSpeech = ({
                                             src="/listening.gif"
                                             alt=""
                                             fill
-                                            onClick={stopListening}
+                                            onClick={StopListening}
                                             className='hover:cursor-pointer'
                                         /> :
                                         <MicOff
-                                            onClick={startListening}
+                                            onClick={StartListening}
                                             className='hover:cursor-pointer hover:text-[#c70039]'
                                         />
                                     }

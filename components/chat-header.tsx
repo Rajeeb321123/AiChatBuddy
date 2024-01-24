@@ -21,6 +21,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import useLanguageSet from "@/hooks/useLanguageSet";
+import UploadButton from "./UploadButton";
 
 interface ChatHeaderProps {
     companion: Companion & {
@@ -114,7 +115,7 @@ export const ChatHeader = ({
                 </div>
 
             </div>
-
+            <UploadButton/>
 
             {user?.id === companion.userId && (
                 <DropdownMenu>

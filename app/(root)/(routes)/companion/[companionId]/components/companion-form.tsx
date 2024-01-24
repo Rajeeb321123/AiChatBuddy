@@ -23,9 +23,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
+import UploadButton from "@/components/UploadButton";
 
 interface CompanionFormProps {
     initialData: Companion | null;
+    userId: string;
 }
 
 
@@ -65,9 +67,13 @@ const formSchema = z.object({
         message: "Image is required",
     }),
 
+
+   
+    
+
 });
 
-const CompanionForm = ({  initialData }: CompanionFormProps) => {
+const CompanionForm = ({ initialData, userId }: CompanionFormProps) => {
     const router = useRouter();
     const { toast } = useToast();
 
@@ -79,36 +85,40 @@ const CompanionForm = ({  initialData }: CompanionFormProps) => {
             instructions: "",
             seed: "",
             src: "",
+
             // undefined as it is select component
         },
     });
 
+    console.log(form.getValues())
     const isLoading = form.formState.isSubmitting;
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
+
+        values=form.getValues()
         try {
-          if (initialData) {
-            await axios.patch(`/api/companion/${initialData.id}`, values);
-          } else {
-            await axios.post("/api/companion", values);
-          }
-    
-          toast({
-            description: "Success.",
-            duration: 3000,
-          });
-    
-          router.refresh();
-          router.push("/");
+            if (initialData) {
+                await axios.patch(`/api/companion/${initialData.id}`, values);
+            } else {
+                await axios.post("/api/companion", values);
+            }
+
+            toast({
+                description: "Success.",
+                duration: 3000,
+            });
+
+            router.refresh();
+            router.push("/");
         } catch (error) {
-          toast({
-            variant: "destructive",
-            description: "Something went wrong.",
-            duration: 3000,
-          });
+            toast({
+                variant: "destructive",
+                description: "Something went wrong.",
+                duration: 3000,
+            });
         }
-      };
-    
+    };
+
 
     return (
         <div className="h-full p-4 space-y-2 max-w-3xl mx-auto">
@@ -131,21 +141,26 @@ const CompanionForm = ({  initialData }: CompanionFormProps) => {
                         </div>
                         <Separator className=" bg-primary/10" />
                     </div>
-                    <FormField
-                        name="src"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-col items-center justify-center space-y-4 ">
-                                <FormControl>
-                                    <ImageUpload
-                                        disabled={isLoading}
-                                        onChange={field.onChange}
-                                        value={field.value}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        <FormField
+                            name="src"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-col items-center justify-center space-y-4 ">
+                                    <FormControl>
+                                        <ImageUpload
+                                            disabled={isLoading}
+                                            onChange={field.onChange}
+                                            value={field.value}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                       
+                        
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
                             name="name"
@@ -252,7 +267,7 @@ const CompanionForm = ({  initialData }: CompanionFormProps) => {
                             size='lg' disabled={isLoading}
                         >
                             {initialData ? "Edit your companion" : "Create your Companion"}
-                            <Wand2 
+                            <Wand2
                                 className="w-4 h-4 ml-2"
                             />
                         </Button>

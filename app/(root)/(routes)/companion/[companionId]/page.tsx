@@ -29,6 +29,7 @@ const CompanionIdPage = async ({
   return (
     <CompanionForm 
       initialData={companion}
+      userId={userId}
     />
   );
 };
