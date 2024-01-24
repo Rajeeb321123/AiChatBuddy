@@ -10,7 +10,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@clerk/nextjs": "^4.26.1",
+    "@clerk/nextjs": "^4.29.5",
     "@hookform/resolvers": "^3.3.2",
     "@pinecone-database/pinecone": "^1.1.2",
     "@prisma/client": "^5.5.2",
