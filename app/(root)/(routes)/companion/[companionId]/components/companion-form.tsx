@@ -79,12 +79,12 @@ const CompanionForm = ({ initialData, userId }: CompanionFormProps) => {
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: initialData || {
-            name: "",
-            description: "",
-            instructions: "",
-            seed: "",
-            src: "",
+        defaultValues:  {
+            name: initialData?.name || "",
+            description:initialData?.description || "",
+            instructions: initialData?.instructions||"",
+            seed: initialData?.seed || "",
+            src: initialData?.src || "",
 
             // undefined as it is select component
         },

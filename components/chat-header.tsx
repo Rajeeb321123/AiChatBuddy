@@ -16,7 +16,6 @@ import {
     SelectContent,
     SelectGroup,
     SelectItem,
-    SelectLabel,
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
@@ -73,14 +72,14 @@ export const ChatHeader = ({
             <div
                 className="flex gap-x-2 items-center bg-[#c70039]  text-white py-1 px-3 rounded-md"
             >
-                <Button
+                {/* <Button
                     onClick={() => router.back()}
                     size='icon' variant='ghost'
                 >
                     <ChevronLeft
                         className="h-8 w-8"
                     />
-                </Button>
+                </Button> */}
                 <BotAvatar
                     src={companion.src!}
                 />

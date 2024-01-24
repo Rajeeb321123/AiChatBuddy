@@ -15,12 +15,12 @@ const Sidebar = () => {
             label: "Home",
             pro: false,
         },
-        {
-            icon: UserPlus,
-            href: '/companion/new',
-            label: "Create",
-            pro: true,
-        },
+        // {
+        //     icon: UserPlus,
+        //     href: '/companion/new',
+        //     label: "Create",
+        //     pro: true,
+        // },
     ];
     
     const onNavigate = (url: string , pro: boolean) => {
